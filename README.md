@@ -2,7 +2,7 @@
 
 A beautiful, minimal focus timer application built with **Flask** and **React**, featuring an Anthropic-inspired aesthetic.
 
-![Focus Timer UI](https://github.com/sanjuprk/focus-timer/assets/placeholder.png)
+![Focus Timer UI](assets/focus-timer-ui.png)
 *Note: Add a screenshot of your app here if you like!*
 
 ## ✨ Features
