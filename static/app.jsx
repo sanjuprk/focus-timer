@@ -277,6 +277,10 @@ const TimerView = ({ onSessionComplete }) => {
             notif.onclick = () => {
                 window.focus();
                 notif.close();
+                if (alarmRef.current) {
+                    alarmRef.current.pause();
+                    alarmRef.current.currentTime = 0;
+                }
             };
         }
         document.title = "⏰ TIME IS UP!";
