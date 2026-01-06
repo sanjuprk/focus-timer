@@ -172,12 +172,10 @@ const TimerView = ({ onSessionComplete }) => {
     const alarmRef = useRef(null);
 
     useEffect(() => {
-        // Initialize Howler
-        alarmRef.current = new Howl({
-            src: ['https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'], // Gentle bell
-            volume: 0.5,
-            loop: true
-        });
+        // Initialize Audio (Native)
+        alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Gentle bell
+        alarmRef.current.volume = 0.5;
+        alarmRef.current.loop = true;
 
         // Check for active session in localStorage on mount
         const savedSession = JSON.parse(localStorage.getItem('focus_session'));
@@ -273,7 +271,7 @@ const TimerView = ({ onSessionComplete }) => {
     };
 
     const handleTimerDone = () => {
-        alarmRef.current?.play();
+        alarmRef.current?.play().catch(e => console.warn("Audio autoplay blocked", e));
         if (Notification.permission === 'granted') {
             new Notification("Time is up!", { body: `Great work on "${title}"` });
         }
@@ -302,12 +300,18 @@ const TimerView = ({ onSessionComplete }) => {
         setRemaining(null);
         setActiveSessionId(null);
         localStorage.removeItem('focus_session');
-        alarmRef.current?.stop();
+        if (alarmRef.current) {
+            alarmRef.current.pause();
+            alarmRef.current.currentTime = 0;
+        }
         document.title = "Focus Timer";
     };
 
     const handleComplete = async (data) => {
-        alarmRef.current?.stop();
+        if (alarmRef.current) {
+            alarmRef.current.pause();
+            alarmRef.current.currentTime = 0;
+        }
         try {
             await fetch(`/api/sessions/${activeSessionId}/complete`, {
                 method: 'POST',
