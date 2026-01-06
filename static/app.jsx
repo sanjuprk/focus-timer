@@ -273,7 +273,11 @@ const TimerView = ({ onSessionComplete }) => {
     const handleTimerDone = () => {
         alarmRef.current?.play().catch(e => console.warn("Audio autoplay blocked", e));
         if (Notification.permission === 'granted') {
-            new Notification("Time is up!", { body: `Great work on "${title}"` });
+            const notif = new Notification("Time is up!", { body: `Great work on "${title}"` });
+            notif.onclick = () => {
+                window.focus();
+                notif.close();
+            };
         }
         document.title = "⏰ TIME IS UP!";
         setShowModal(true);
