@@ -9,6 +9,7 @@ A beautiful, minimal focus timer application built with **Flask** and **React**,
 
 - **Deep Work Timer**: Set custom durations or use quick presets (5m, 25m, 45m, 60m).
 - **Minimalist Design**: A clean, distraction-free interface with pulsing animations and terracotta accents.
+- **Interactive Notifications**: Click the "Time's Up" notification to instantly focus the window and silence the alarm.
 - **Session Tracking**: Rate your focus quality, add notes, and record key learnings after each session.
 - **History & Analytics**: View your "Focus Journey" with detailed stats and session history grouped by date.
 - **Dynamic Inspirations**: Intelligent placeholders that spark creativity (e.g., "Debugging the universe...").
@@ -25,9 +26,8 @@ A beautiful, minimal focus timer application built with **Flask** and **React**,
 ### Prerequisites
 
 - Python 3.8+
-- `pip` (Python package installer)
 
-### Installation
+### Quick Start
 
 1.  **Clone the repository**
     ```bash
@@ -35,31 +35,23 @@ A beautiful, minimal focus timer application built with **Flask** and **React**,
     cd focus-timer
     ```
 
-2.  **Create a virtual environment (Optional but recommended)**
-    ```bash
-    # macOS/Linux
-    python3 -m venv .venv
-    source .venv/bin/activate
+2.  **Run the App**
 
-    # Windows
-    python -m venv .venv
-    .venv\Scripts\activate
+    **macOS / Linux:**
+    ```bash
+    ./run.sh
     ```
 
-3.  **Install dependencies**
-    ```bash
-    pip install -r requirements.txt
+    **Windows:**
+    Double-click `run.bat` or run in terminal:
+    ```cmd
+    run.bat
     ```
 
-### Running the App
+    *(This script will automatically create a virtual environment, install dependencies, and launch the app)*
 
-1.  **Start the server**
-    ```bash
-    python app.py
-    ```
-
-2.  **Open in Browser**
-    Visit [http://127.0.0.1:5001](http://127.0.0.1:5001) in your favorite browser.
+3.  **Open in Browser**
+    The app should open automatically. If not, visit [http://127.0.0.1:5001](http://127.0.0.1:5001).
 
 ## 📝 Usage
 

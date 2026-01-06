@@ -195,6 +195,7 @@ App
 - **Alarm sound**: Uses native Audio API (no external dependencies) for reliable playback
 - **Tab title flashing**: Alternates between "⏰ TIME IS UP!" and session title
 - Browser notification on completion (requests permission)
+  - **Click-to-action**: Clicking notification focuses window and stops alarm
 - Warns before leaving page with active timer
 
 ### Responsive Breakpoints
@@ -287,7 +288,7 @@ This is a **production-quality focus timer** with:
 - ✅ Session tracking with ratings, notes, learnings
 - ✅ Dedicated date pages for session history
 - ✅ Alarm sound via Native Audio
-- ✅ Browser notifications + tab title flashing
+- ✅ Browser notifications + tab title flashing (Click to focus/silence)
 - ✅ Shutdown button to stop server from UI
 - ✅ Double-click launcher (focus.pyw)
 - ✅ Responsive design
