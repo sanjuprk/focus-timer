@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef, useMemo } = React;
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
 // --- Illustrations ---
 
@@ -83,33 +83,69 @@ const DurationSelector = ({ duration, setDuration }) => {
 
 // ... CompletionModal ...
 const CompletionModal = React.memo(({ onSave, onCancel }) => {
-    // ...
+    const [rating, setRating] = useState(null);
+    const [notes, setNotes] = useState('');
+    const [learnings, setLearnings] = useState('');
+
+    const handleSave = () => {
+        onSave({ rating, notes, learnings });
+    };
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Session Complete</h2>
+
+                <div className="group mb-4">
+                    <label className="input-label">Focus Rating</label>
+                    <div className="rating-grid">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
+                            <button
+                                key={r}
+                                className={`rating-btn ${rating === r ? 'selected' : ''}`}
+                                data-value={r}
+                                onClick={() => setRating(r)}
+                            >
+                                {r}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="group mb-4">
+                    <label className="input-label">What did you accomplish?</label>
+                    <textarea
+                        rows="3"
+                        value={notes}
+                        onChange={e => setNotes(e.target.value)}
+                        placeholder="Task details..."
+                    />
+                </div>
+
+                <div className="group mb-4">
+                    <label className="input-label">Key learnings or insights?</label>
+                    <textarea
+                        rows="2"
+                        value={learnings}
+                        onChange={e => setLearnings(e.target.value)}
+                        placeholder="Notes for next time..."
+                    />
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                    <button className="secondary-btn" style={{ flex: 1 }} onClick={onCancel}>
+                        Skip
+                    </button>
+                    <button className="start-btn" style={{ flex: 1 }} onClick={handleSave}>
+                        Save & Complete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 });
 
-// ... inside TimerView ...
-const handleComplete = useCallback(async (data) => {
-    if (alarmRef.current) {
-        alarmRef.current.pause();
-        alarmRef.current.currentTime = 0;
-    }
-    try {
-        await fetch(`/api/sessions/${activeSessionId}/complete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        onSessionComplete();
-    } catch (e) { console.error(e); }
 
-    setShowModal(false);
-    resetTimer();
-    setTitle('');
-}, [activeSessionId, onSessionComplete]);
-
-const handleCancel = useCallback(() => handleComplete({}), [handleComplete]);
-
-// ... render ...
-{ showModal && <CompletionModal onSave={handleComplete} onCancel={handleCancel} /> }
 
 
 const TimerActiveIllustration = () => (
@@ -301,7 +337,7 @@ const TimerView = ({ onSessionComplete }) => {
         document.title = "Focus Timer";
     };
 
-    const handleComplete = async (data) => {
+    const handleComplete = useCallback(async (data) => {
         if (alarmRef.current) {
             alarmRef.current.pause();
             alarmRef.current.currentTime = 0;
@@ -318,14 +354,16 @@ const TimerView = ({ onSessionComplete }) => {
         setShowModal(false);
         resetTimer();
         setTitle('');
-    };
+    }, [activeSessionId, onSessionComplete]);
+
+    const handleCancel = useCallback(() => handleComplete({}), [handleComplete]);
 
     // calculate progress
     const progress = remaining && totalDuration ? ((totalDuration - remaining) / totalDuration) * 100 : 0;
 
     return (
         <div className="timer-view">
-            {showModal && <CompletionModal onSave={handleComplete} onCancel={() => handleComplete({})} />}
+            {showModal && <CompletionModal onSave={handleComplete} onCancel={handleCancel} />}
 
             {isActive ? (
                 <div className="active-timer">
