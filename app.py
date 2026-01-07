@@ -64,7 +64,14 @@ def create_session():
 def complete_session(id):
     session = Session.query.get_or_404(id)
     data = request.json
-    session.end_time = datetime.now()
+    now = datetime.now()
+    
+    # Calculate actual duration in minutes (round to nearest minute, min 1)
+    actual_duration_seconds = (now - session.start_time).total_seconds()
+    actual_duration_minutes = max(1, round(actual_duration_seconds / 60))
+    
+    session.end_time = now
+    session.duration_minutes = actual_duration_minutes
     session.rating = data.get('rating')
     session.notes = data.get('notes')
     session.learnings = data.get('learnings')

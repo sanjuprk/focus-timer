@@ -172,10 +172,25 @@ const TimerView = ({ onSessionComplete }) => {
     const alarmRef = useRef(null);
 
     useEffect(() => {
-        // Initialize Audio (Native)
-        alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Gentle bell
-        alarmRef.current.volume = 0.5;
-        alarmRef.current.loop = true;
+        // Initialize Audio with Fallback
+        const defaultAlarm = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
+        const customAlarm = '/static/audio/my-alarm-sound.mp3';
+
+        const audio = new Audio(customAlarm);
+        audio.volume = 0.5;
+        audio.loop = true;
+
+        audio.onerror = () => {
+            console.log('Custom alarm not found, using default.');
+            const fallback = new Audio(defaultAlarm);
+            fallback.volume = 0.5;
+            fallback.loop = true;
+            alarmRef.current = fallback;
+        };
+
+        alarmRef.current = audio;
+
+
 
         // Check for active session in localStorage on mount
         const savedSession = JSON.parse(localStorage.getItem('focus_session'));
@@ -209,7 +224,6 @@ const TimerView = ({ onSessionComplete }) => {
                 const diff = endTime - now;
 
                 if (diff <= 0) {
-                    // Timer finished
                     setRemaining(0);
                     clearInterval(interval);
                     handleTimerDone();
@@ -220,9 +234,11 @@ const TimerView = ({ onSessionComplete }) => {
             }, 100);
         } else {
             document.title = "Focus Timer";
+            setRemaining(null);
         }
         return () => clearInterval(interval);
     }, [isActive, endTime, title]);
+
 
     const formatTime = (ms) => {
         const totalSecs = Math.ceil(ms / 1000);
@@ -438,6 +454,15 @@ const SessionsView = ({ onBack }) => {
         setSessions(data);
     };
 
+    const deleteSession = async (e, id) => {
+        e.stopPropagation();
+        if (confirm('Delete this session?')) {
+            await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+            if (selectedDate) fetchSessions(selectedDate);
+            fetchDates();
+        }
+    };
+
     const formatDate = (dateStr) => {
         // Appending T00:00:00 forces local time parsing in most environments for YYYY-MM-DD
         const d = new Date(dateStr + 'T00:00:00');
@@ -479,6 +504,26 @@ const SessionsView = ({ onBack }) => {
                 <div className="session-list">
                     {sessions.map(s => (
                         <div key={s.id} className={`session-item rated-${s.rating <= 3 ? 'low' : s.rating <= 6 ? 'med' : 'high'}`}>
+                            <button
+                                className="delete-btn"
+                                onClick={(e) => deleteSession(e, s.id)}
+                                title="Delete Session"
+                                style={{
+                                    position: 'absolute',
+                                    right: '1rem',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    border: 'none',
+                                    background: 'transparent',
+                                    fontSize: '1.5rem',
+                                    color: 'var(--text-muted)',
+                                    cursor: 'pointer',
+                                    padding: '0 0.5rem',
+                                    zIndex: 10
+                                }}
+                            >
+                                ×
+                            </button>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                     <strong>{s.title}</strong>
