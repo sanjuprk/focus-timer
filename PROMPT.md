@@ -286,11 +286,13 @@ This is a **production-quality focus timer** with:
 - ✅ Beautiful Anthropic-inspired warm design
 - ✅ Intuitive duration selection (presets + increments)
 - ✅ Session tracking with ratings, notes, learnings
+- ✅ Session tracking with ratings, notes, learnings
 - ✅ Dedicated date pages for session history
-- ✅ Alarm sound via Native Audio
+- ✅ Alarm sound via Native Audio (Supports custom `static/audio/my-alarm-sound.mp3` with fallback)
 - ✅ Browser notifications + tab title flashing (Click to focus/silence)
 - ✅ Shutdown button to stop server from UI
 - ✅ Double-click launcher (focus.pyw)
+- ✅ Accurate "Finish Early" duration tracking
 - ✅ Responsive design
 - ✅ Zero build step (React via CDN)
 - ✅ SQLite persistence
