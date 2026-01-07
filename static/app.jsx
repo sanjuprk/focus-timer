@@ -81,68 +81,36 @@ const DurationSelector = ({ duration, setDuration }) => {
     );
 };
 
-const CompletionModal = ({ onSave, onCancel, initialDuration }) => {
-    const [rating, setRating] = useState(null);
-    const [notes, setNotes] = useState('');
-    const [learnings, setLearnings] = useState('');
+// ... CompletionModal ...
+const CompletionModal = React.memo(({ onSave, onCancel }) => {
+    // ...
+});
 
-    const handleSave = () => {
-        onSave({ rating, notes, learnings });
-    };
+// ... inside TimerView ...
+const handleComplete = useCallback(async (data) => {
+    if (alarmRef.current) {
+        alarmRef.current.pause();
+        alarmRef.current.currentTime = 0;
+    }
+    try {
+        await fetch(`/api/sessions/${activeSessionId}/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        onSessionComplete();
+    } catch (e) { console.error(e); }
 
-    return (
-        <div className="modal-overlay">
-            <div className="modal-content">
-                <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Session Complete</h2>
+    setShowModal(false);
+    resetTimer();
+    setTitle('');
+}, [activeSessionId, onSessionComplete]);
 
-                <div className="group mb-4">
-                    <label className="input-label">Focus Rating</label>
-                    <div className="rating-grid">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
-                            <button
-                                key={r}
-                                className={`rating-btn ${rating === r ? 'selected' : ''}`}
-                                data-value={r}
-                                onClick={() => setRating(r)}
-                            >
-                                {r}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+const handleCancel = useCallback(() => handleComplete({}), [handleComplete]);
 
-                <div className="group mb-4">
-                    <label className="input-label">What did you accomplish?</label>
-                    <textarea
-                        rows="3"
-                        value={notes}
-                        onChange={e => setNotes(e.target.value)}
-                        placeholder="Task details..."
-                    />
-                </div>
+// ... render ...
+{ showModal && <CompletionModal onSave={handleComplete} onCancel={handleCancel} /> }
 
-                <div className="group mb-4">
-                    <label className="input-label">Key learnings or insights?</label>
-                    <textarea
-                        rows="2"
-                        value={learnings}
-                        onChange={e => setLearnings(e.target.value)}
-                        placeholder="Notes for next time..."
-                    />
-                </div>
-
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                    <button className="secondary-btn" style={{ flex: 1 }} onClick={onCancel}>
-                        Skip
-                    </button>
-                    <button className="start-btn" style={{ flex: 1 }} onClick={handleSave}>
-                        Save & Complete
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 const TimerActiveIllustration = () => (
     <svg viewBox="0 0 200 200" width="120" height="120" style={{ marginBottom: '2rem' }}>
@@ -286,8 +254,10 @@ const TimerView = ({ onSessionComplete }) => {
         }
     };
 
-    const handleTimerDone = () => {
-        alarmRef.current?.play().catch(e => console.warn("Audio autoplay blocked", e));
+    const handleTimerDone = (playSound = true) => {
+        if (playSound) {
+            alarmRef.current?.play().catch(e => console.warn("Audio autoplay blocked", e));
+        }
         if (Notification.permission === 'granted') {
             const notif = new Notification("Time is up!", { body: `Great work on "${title}"` });
             notif.onclick = () => {
@@ -305,7 +275,7 @@ const TimerView = ({ onSessionComplete }) => {
 
     const finishEarly = () => {
         setIsActive(false);
-        handleTimerDone();
+        handleTimerDone(false);
     };
 
     const cancelSession = async () => {
@@ -504,26 +474,6 @@ const SessionsView = ({ onBack }) => {
                 <div className="session-list">
                     {sessions.map(s => (
                         <div key={s.id} className={`session-item rated-${s.rating <= 3 ? 'low' : s.rating <= 6 ? 'med' : 'high'}`}>
-                            <button
-                                className="delete-btn"
-                                onClick={(e) => deleteSession(e, s.id)}
-                                title="Delete Session"
-                                style={{
-                                    position: 'absolute',
-                                    right: '1rem',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    border: 'none',
-                                    background: 'transparent',
-                                    fontSize: '1.5rem',
-                                    color: 'var(--text-muted)',
-                                    cursor: 'pointer',
-                                    padding: '0 0.5rem',
-                                    zIndex: 10
-                                }}
-                            >
-                                ×
-                            </button>
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                     <strong>{s.title}</strong>
@@ -538,15 +488,36 @@ const SessionsView = ({ onBack }) => {
                                     </div>
                                 )}
                             </div>
-                            {s.rating && (
-                                <div style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    width: '32px', height: '32px', borderRadius: '50%',
-                                    background: 'var(--cream-dark)', fontWeight: 'bold'
-                                }}>
-                                    {s.rating}
-                                </div>
-                            )}
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: '1rem' }}>
+                                {s.rating && (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        width: '32px', height: '32px', borderRadius: '50%',
+                                        background: 'var(--cream-dark)', fontWeight: 'bold'
+                                    }}>
+                                        {s.rating}
+                                    </div>
+                                )}
+                                <button
+                                    className="delete-btn-icon"
+                                    onClick={(e) => deleteSession(e, s.id)}
+                                    title="Delete Session"
+                                    style={{
+                                        border: 'none',
+                                        background: 'transparent',
+                                        fontSize: '1.2rem',
+                                        cursor: 'pointer',
+                                        opacity: 0.6,
+                                        transition: 'opacity 0.2s',
+                                        padding: '4px'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.opacity = 1}
+                                    onMouseOut={(e) => e.target.style.opacity = 0.6}
+                                >
+                                    🗑
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
