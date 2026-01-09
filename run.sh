@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change to the script's directory
+cd "$(dirname "$0")"
+
 # Define environment directory
 VENV_DIR=".venv"
 
@@ -15,9 +18,9 @@ source "$VENV_DIR/bin/activate"
 # Install dependencies
 if [ -f "requirements.txt" ]; then
     echo "Installing dependencies..."
-    pip install -q -r requirements.txt
+    pip3 install -q -r requirements.txt
 fi
 
 # Run the application
 echo "Starting Focus Timer..."
-python focus.pyw
+python3 focus.pyw
