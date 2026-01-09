@@ -9,6 +9,7 @@ A beautiful, minimal focus timer application built with **Flask** and **React**,
 
 - **Deep Work Timer**: Set custom durations or use quick presets (5m, 25m, 45m, 60m).
 - **Minimalist Design**: A clean, distraction-free interface with pulsing animations and terracotta accents.
+- **Wallpaper Backgrounds**: Customize your timer view with beautiful wallpapers. Cycle through them with a single click.
 - **Interactive Notifications**: Click the "Time's Up" notification to instantly focus the window and silence the alarm.
 - **Session Tracking**: Rate your focus quality, add notes, and record key learnings after each session.
 - **History & Analytics**: View your "Focus Journey" with detailed stats and session history grouped by date.

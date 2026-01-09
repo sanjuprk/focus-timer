@@ -2,10 +2,26 @@ import os
 import signal
 import sys
 from datetime import datetime, date
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from models import db, Session
 
 app = Flask(__name__)
+
+# Serve wallpapers directory
+@app.route('/wallpapers/<path:filename>')
+def serve_wallpaper(filename):
+    return send_from_directory('wallpapers', filename)
+
+@app.route('/api/wallpapers', methods=['GET'])
+def get_wallpapers():
+    """Return list of available wallpaper URLs"""
+    wallpapers_dir = os.path.join(os.path.dirname(__file__), 'wallpapers')
+    wallpapers = []
+    if os.path.exists(wallpapers_dir):
+        for f in sorted(os.listdir(wallpapers_dir)):
+            if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
+                wallpapers.append(f'/wallpapers/{f}')
+    return jsonify(wallpapers)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sessions.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

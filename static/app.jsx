@@ -172,6 +172,8 @@ const TimerView = ({ onSessionComplete }) => {
     const [activeSessionId, setActiveSessionId] = useState(null);
     const [totalDuration, setTotalDuration] = useState(0);
     const [placeholder, setPlaceholder] = useState("Project X, Reading, Writing...");
+    const [wallpapers, setWallpapers] = useState([]);
+    const [currentWallpaperIndex, setCurrentWallpaperIndex] = useState(0);
 
     const alarmRef = useRef(null);
 
@@ -194,7 +196,18 @@ const TimerView = ({ onSessionComplete }) => {
 
         alarmRef.current = audio;
 
-
+        // Fetch available wallpapers
+        fetch('/api/wallpapers')
+            .then(res => res.json())
+            .then(data => {
+                setWallpapers(data);
+                // Restore saved wallpaper index if available
+                const savedIndex = localStorage.getItem('focus_wallpaper_index');
+                if (savedIndex !== null && data.length > 0) {
+                    setCurrentWallpaperIndex(parseInt(savedIndex, 10) % data.length);
+                }
+            })
+            .catch(err => console.error('Failed to load wallpapers:', err));
 
         // Check for active session in localStorage on mount
         const savedSession = JSON.parse(localStorage.getItem('focus_session'));
@@ -361,36 +374,70 @@ const TimerView = ({ onSessionComplete }) => {
     // calculate progress
     const progress = remaining && totalDuration ? ((totalDuration - remaining) / totalDuration) * 100 : 0;
 
+    // Cycle to next wallpaper
+    const cycleWallpaper = () => {
+        if (wallpapers.length === 0) return;
+        const nextIndex = (currentWallpaperIndex + 1) % wallpapers.length;
+        setCurrentWallpaperIndex(nextIndex);
+        localStorage.setItem('focus_wallpaper_index', nextIndex.toString());
+    };
+
+    const currentWallpaper = wallpapers.length > 0 ? wallpapers[currentWallpaperIndex] : null;
+
     return (
         <div className="timer-view">
             {showModal && <CompletionModal onSave={handleComplete} onCancel={handleCancel} />}
 
             {isActive ? (
-                <div className="active-timer">
-                    <TimerActiveIllustration />
+                <div
+                    className="active-timer-bg"
+                    style={currentWallpaper ? {
+                        backgroundImage: `url(${currentWallpaper})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    } : {}}
+                >
+                    <div className="active-timer-overlay">
+                        <div className="active-timer">
+                            <h2 className="session-title">{title}</h2>
 
-                    <div className="countdown" style={{ fontSize: '6rem', color: 'var(--terracotta)', fontWeight: '400' }}>
-                        {formatTime(remaining || 0)}
-                    </div>
+                            <TimerActiveIllustration />
 
-                    <div className="progress-container" style={{ maxWidth: '400px', margin: '0 auto 2rem', height: '4px', background: 'var(--beige)' }}>
-                        <div className="progress-bar" style={{ width: `${progress}%`, background: 'var(--terracotta)', borderRadius: '4px' }}></div>
-                    </div>
+                            <div className="countdown" style={{ fontSize: '6rem', color: currentWallpaper ? 'white' : 'var(--terracotta)', fontWeight: '400', textShadow: currentWallpaper ? '0 2px 20px rgba(0,0,0,0.5)' : 'none' }}>
+                                {formatTime(remaining || 0)}
+                            </div>
 
-                    <p style={{ marginBottom: '3rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                        {progress < 25 ? "Time to focus." :
-                            progress < 50 ? "Keep going, you're doing great." :
-                                progress < 80 ? "Stay in the flow." : "Great progress! Keep going strong."}
-                    </p>
+                            <div className="progress-container" style={{ maxWidth: '400px', margin: '0 auto 2rem', height: '4px', background: currentWallpaper ? 'rgba(255,255,255,0.3)' : 'var(--beige)' }}>
+                                <div className="progress-bar" style={{ width: `${progress}%`, background: currentWallpaper ? 'white' : 'var(--terracotta)', borderRadius: '4px' }}></div>
+                            </div>
 
-                    <div className="timer-controls">
-                        <button
-                            className="secondary-btn"
-                            onClick={finishEarly}
-                            style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', borderColor: 'transparent', background: 'transparent', color: 'var(--text-muted)' }}
-                        >
-                            Done Early
-                        </button>
+                            <p style={{ marginBottom: '3rem', color: currentWallpaper ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)', fontSize: '0.95rem', textShadow: currentWallpaper ? '0 1px 10px rgba(0,0,0,0.5)' : 'none' }}>
+                                {progress < 25 ? "Time to focus." :
+                                    progress < 50 ? "Keep going, you're doing great." :
+                                        progress < 80 ? "Stay in the flow." : "Great progress! Keep going strong."}
+                            </p>
+
+                            <div className="timer-controls">
+                                <button
+                                    className="secondary-btn"
+                                    onClick={finishEarly}
+                                    style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', borderColor: 'transparent', background: currentWallpaper ? 'rgba(255,255,255,0.2)' : 'transparent', color: currentWallpaper ? 'white' : 'var(--text-muted)' }}
+                                >
+                                    Done Early
+                                </button>
+                            </div>
+                        </div>
+
+                        {wallpapers.length > 0 && (
+                            <button
+                                className="wallpaper-btn"
+                                onClick={cycleWallpaper}
+                                title="Change wallpaper"
+                            >
+                                🖼️
+                            </button>
+                        )}
                     </div>
                 </div>
             ) : (

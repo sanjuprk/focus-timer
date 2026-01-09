@@ -29,9 +29,10 @@ focus-timer/
 ├── focus.pyw              # Double-click launcher (starts server + opens browser)
 ├── requirements.txt       # Python dependencies (Flask, Flask-SQLAlchemy)
 ├── sessions.db            # SQLite database (auto-created)
+├── wallpapers/            # Background images for timer view
 ├── static/
-│   ├── style.css          # Anthropic-style CSS (~1380 lines)
-│   └── app.jsx            # React SPA (~950 lines)
+│   ├── style.css          # Anthropic-style CSS (~700 lines)
+│   └── app.jsx            # React SPA (~700 lines)
 └── templates/
    └── index.html         # HTML shell for React app
 ```
@@ -84,8 +85,9 @@ focus-timer/
 
 ### 2. Active Timer View
 - Large countdown display (84px font)
-- Session title above
+- **Session title displayed prominently**
 - Progress bar (terracotta gradient)
+- **Wallpaper background** with cycling button (🖼️, bottom-right)
 - "Finish Early" and "Cancel" buttons
 - Motivational messages that change based on progress %
 
@@ -135,6 +137,8 @@ focus-timer/
 | GET | `/api/sessions/<id>` | Get single session |
 | POST | `/api/sessions/<id>/complete` | Complete with `{rating, notes, learnings}` |
 | DELETE | `/api/sessions/<id>` | Delete session |
+| GET | `/api/wallpapers` | List available wallpaper URLs |
+| GET | `/wallpapers/<filename>` | Serve wallpaper image file |
 | POST | `/api/shutdown` | Stop the server gracefully |
 
 ### `/api/dates` Response Format
@@ -286,7 +290,8 @@ This is a **production-quality focus timer** with:
 - ✅ Beautiful Anthropic-inspired warm design
 - ✅ Intuitive duration selection (presets + increments)
 - ✅ Session tracking with ratings, notes, learnings
-- ✅ Session tracking with ratings, notes, learnings
+- ✅ **Wallpaper backgrounds** with cycling button
+- ✅ **Session title display** on active timer
 - ✅ Dedicated date pages for session history
 - ✅ Alarm sound via Native Audio (Supports custom `static/audio/my-alarm-sound.mp3` with fallback)
 - ✅ Browser notifications + tab title flashing (Click to focus/silence)
