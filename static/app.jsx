@@ -231,6 +231,32 @@ const TimerView = ({ onSessionComplete }) => {
             "Designing the future..."
         ];
         setPlaceholder(Placeholders[Math.floor(Math.random() * Placeholders.length)]);
+
+        // Stop alarm when user returns to the page (visibility change or window focus)
+        const stopAlarm = () => {
+            if (alarmRef.current) {
+                alarmRef.current.pause();
+                alarmRef.current.currentTime = 0;
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                stopAlarm();
+            }
+        };
+
+        const handleWindowFocus = () => {
+            stopAlarm();
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleWindowFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleWindowFocus);
+        };
     }, []);
 
     useEffect(() => {
@@ -654,6 +680,24 @@ const SessionsView = ({ onBack }) => {
 
 const App = () => {
     const [view, setView] = useState('timer'); // timer | sessions
+    const [darkMode, setDarkMode] = useState(() => {
+        // Check localStorage or system preference
+        const saved = localStorage.getItem('focus_dark_mode');
+        if (saved !== null) return saved === 'true';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
+    useEffect(() => {
+        // Apply dark mode class to body
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        localStorage.setItem('focus_dark_mode', darkMode);
+    }, [darkMode]);
+
+    const toggleDarkMode = () => setDarkMode(prev => !prev);
 
     const shutdown = async () => {
         if (confirm('Stop the server?')) {
@@ -685,9 +729,14 @@ const App = () => {
                     </button>
                 </div>
 
-                <button className="shutdown-btn" onClick={shutdown} title="Stop Server">
-                    ⏻
-                </button>
+                <div className="nav-actions">
+                    <button className="theme-toggle-btn" onClick={toggleDarkMode} title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+                        {darkMode ? '☀️' : '🌙'}
+                    </button>
+                    <button className="shutdown-btn" onClick={shutdown} title="Stop Server">
+                        ⏻
+                    </button>
+                </div>
             </nav>
 
             {view === 'timer' ? (
